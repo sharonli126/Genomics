@@ -14,17 +14,17 @@ View((final.result))
 
 concentration of Proteobacteria 
 ```{r}
-ggplot(Final.result, aes(x = soil, y = conc.Proteobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+ggplot(final.result, aes(x = soil, y = conc.Proteobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
 ```
 
 concentration of Actinobacteria 
 ```{r}
-ggplot(Final.result, aes(x = soil, y = conc.Actinobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+ggplot(final.result, aes(x = soil, y = conc.Actinobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
 ```
 
 concentration of Streptophyta
 ```{r}
-ggplot(Final.result, aes(x = soil, y = conc.Streptophyta)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+ggplot(final.result, aes(x = soil, y = conc.Streptophyta)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
 ```
 
 comparing conc.proteobacteria
