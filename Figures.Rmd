@@ -1,0 +1,105 @@
+---
+title: "data"
+author: "Sharon"
+date: "2023-03-17"
+output: html_document
+---
+
+
+```{r}
+library(ggplot2)
+final.result = read.table("final.result", sep = ",", header = T)
+View((final.result))
+```
+
+concentration of Proteobacteria 
+```{r}
+ggplot(Final.result, aes(x = soil, y = conc.Proteobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+```
+
+concentration of Actinobacteria 
+```{r}
+ggplot(Final.result, aes(x = soil, y = conc.Actinobacteria)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+```
+
+concentration of Streptophyta
+```{r}
+ggplot(Final.result, aes(x = soil, y = conc.Streptophyta)) + geom_point(aes(color = fertiliser), position = position_jitterdodge(dodge.width = 0.6, jitter.width = 0.4))+ geom_smooth(method = "lm")
+```
+
+comparing conc.proteobacteria
+
+```{r}
+soil_1 = subset (final.result, soil=="soil1")
+soil_1_fert = subset(final.result, soil =="soil1" & fertiliser == "control")
+soil_1_unfert = subset (final.result, soil=="soil1" & fertiliser == "60N")
+soil_2 = subset(final.result, soil == "soil2")
+soil_2_fert= subset(soil_2, fertiliser == "control")
+soil_2_unfert= subset(soil_2, fertiliser == "60N")
+
+t.test (soil_1_fert$conc.Proteobacteria, soil_1_unfert$conc.Proteobacteria)
+t.test (soil_1_fert$conc.Actinobacteria, soil_1_unfert$conc.Actinobacteria)
+t.test (soil_1_fert$conc.Streptophyta, soil_1_unfert$conc.Streptophyta)
+t.test (soil_2_fert$conc.Proteobacteria, soil_2_unfert$conc.Proteobacteria)
+t.test (soil_2_fert$conc.Actinobacteria, soil_2_unfert$conc.Actinobacteria)
+t.test (soil_2_fert$conc.Streptophyta, soil_2_unfert$conc.Streptophyta)
+```
+
+# Bar chart
+```{r, echo=F}
+mysample =subset(soil_2_unfert, pot==158)
+# Create a data frame with the mean concentrations for each group and phylum
+means <- data.frame(
+  group = c("Soil 1 Control", "Soil 1 60N", "Soil 2 Control", "Soil 2 60N"),
+  Proteobacteria = c(mean(soil_1_fert$conc.Proteobacteria), mean(soil_1_unfert$conc.Proteobacteria), mean(soil_2_fert$conc.Proteobacteria), mean(soil_2_unfert$conc.Proteobacteria)),
+  Actinobacteria = c(mean(soil_1_fert$conc.Actinobacteria), mean(soil_1_unfert$conc.Actinobacteria), mean(soil_2_fert$conc.Actinobacteria), mean(soil_2_unfert$conc.Actinobacteria)),
+  Streptophyta = c(mean(soil_1_fert$conc.Streptophyta), mean(soil_1_unfert$conc.Streptophyta), mean(soil_2_fert$conc.Streptophyta), mean(soil_2_unfert$conc.Streptophyta))
+)
+
+# Reshape the data frame to long format for plotting
+
+library(tidyr)
+means_long <- pivot_longer(means, cols = Proteobacteria:Streptophyta, names_to = "Phylum", values_to = "Concentration")
+
+# Set the color palette for the phyla
+library(RColorBrewer)
+palette <- brewer.pal(3, "Set1")
+
+# Create the grouped bar chart
+library(ggplot2)
+ggplot(means_long, aes(x = group, y = Concentration, fill = Phylum)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = palette) +
+  labs(x = "Group", y = "Concentration", fill = "Phylum") +
+  theme_bw()
+
+
+```
+
+
+#My sample vs sample_410
+```{r}
+sample16 = subset(soil_2_unfert, pot == 151)
+concentration = data.frame(
+  group = c("Fungi A Soil 2 60N-4", "Control Soil 2 60N-4", "Avg. of Soil 2 & 60N group"),
+  Proteobacteria = c(mysample$conc.Proteobacteria, sample16$conc.Proteobacteria, mean(soil_2_unfert$conc.Proteobacteria)),
+  Actinobacteria = c(mysample$conc.Actinobacteria, sample16$conc.Actinobacteria, mean(soil_2_unfert$conc.Actinobacteria)),
+  Streptophyta = c(mysample$conc.Streptophyta, sample16$conc.Streptophyta, mean(soil_2_unfert$conc.Streptophyta))
+)
+
+library(tidyr)
+means_long <- pivot_longer(concentration, cols = Proteobacteria:Streptophyta, names_to = "Phylum", values_to = "Concentration")
+
+# Set the color palette for the phyla
+library(RColorBrewer)
+palette <- brewer.pal(3, "Set1")
+
+# Create the grouped bar chart
+library(ggplot2)
+ggplot(means_long, aes(x = group, y = Concentration, fill = Phylum)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = palette) +
+  labs(title = "Comparison of Conc. in 3 Phylum between 2 Samples and the Belonging Group", x = "Group", y = "Concentration", fill = "Phylum") +theme_bw()
+```
+
+
