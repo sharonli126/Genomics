@@ -1,0 +1,86 @@
+---
+title: "Fungi soil"
+author: "Sharon"
+date: "2023-03-16"
+output: html_document
+---
+
+This markdown is to analyse data obtained from sequencing result.
+
+# My sample
+```{r}
+inputFile = "My sample/new/fc1barcode09.fasta"
+
+Bc4 <- scan(file = inputFile, what="a")
+
+Bc4.tab <- matrix(Bc4,nrow = 2) # make your list into a 2 row matrix
+Bc4.lengths <- nchar(Bc4.tab[2,]) # calculate the number of characters in each seq
+
+hist(Bc4.lengths) # generate histogram
+hist(log10(Bc4.lengths)) # generate log transformed histogram
+
+table(Bc4.lengths > 200) # your length trimming threshold, if you want to trim
+Total.dna19 <- sum(Bc4.lengths)
+
+phyloFile19="My sample/new/fc1barcode09.csv" # rather select your barcode and another replicate
+saveFilename19="filtered.csv"
+
+df19 = read.csv(phyloFile19)
+sprintf("number of no hits: %i", dim(df19[df19$taxid == "<missing>",])[1])
+
+## taxa assigned reads
+sprintf("number of hits: %i", dim(df19[df19$taxid != "<missing>",])[1])
+
+df19$score <- as.numeric(df19$score) # force to 
+table(is.na(df19$score)) # this gives you the assigned reads
+
+# filter missing
+df19 = df19[!is.na(df19$score), ]
+
+# now we will filter for good quality matches with eValue and then remove contaminants for CleanReads
+hist(pmin(-log10(df19$score),10)) # notice many very good matches with < e-10
+
+eValue=0.000001
+abline(v= -log10(eValue))
+table(df19$score < eValue) #this is step 1 to clean the reads 
+
+print("evalue cutoff")
+
+df19 = df19[df19$score <= eValue,]
+
+## what about some known contaminants?
+# this taxid 2681603, is way too common? 
+#Taxid 2681603, Uroviricota, Caudoviricetes, Caudovirales, Myoviridae, Muvirus, Escherichia virus Mu
+#Taxid 9483 Eukaryota, Chordata, Mammalia, Primates, Cebidae, Callithrix, Callithrix jacchus
+#Taxid 562, Bacteria, Proteobacteria, Gammaproteobacteria, Enterobacterales, Enterobacteriaceae #,Escherichia Escherichia coli
+# Maybe a erroneous read matching erroneous database simple sequence repeat or something
+# lets exclude
+
+contamID <- which(df19$taxid %in% c(2681603, 9483,562))  # can you find any others overlay common
+dim(df19) # check your dimensions on valid rows
+df19 <- df19[-contamID,] # remove contaminant row
+
+print(c(nrow(df19))) # confirm they are gone
+
+# Looking at dominant phyla within this cleaned sample.
+
+sort(table(df19$phylum)) # this should give you the counts 
+
+```
+
+```{r}
+# organising the data and output a csv
+newdf19 = data.frame()
+for(taxid in unique(df19$taxid)) # change df19$taxid to your phylogenetic level
+{
+  currTax = df19[df19$taxid == taxid,]
+  currTax = currTax[,!(names(currTax) %in% 'readID')]
+  newTax = as.vector(currTax[1,])
+  newTax$score = dim(currTax)[1]
+  newdf19 = rbind(newdf19, newTax)
+}
+
+colnames(newdf19) = c("count","taxid","superkingdom","phylum","class","order","family","genus","species")
+write.csv(newdf19, saveFilename19, quote=FALSE, row.names =F)
+```
+
